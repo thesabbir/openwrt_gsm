@@ -24,8 +24,7 @@
 
 import ctypes
 from ctypes import util
-
-from serial.tools import list_ports_common
+import list_ports_common
 
 iokit = ctypes.cdll.LoadLibrary(ctypes.util.find_library('IOKit'))
 cf = ctypes.cdll.LoadLibrary(ctypes.util.find_library('CoreFoundation'))

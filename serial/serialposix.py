@@ -152,38 +152,6 @@ if plat[:5] == 'linux':    # Linux (confirmed)
             except IOError as e:
                 raise ValueError('Failed to set RS485 mode: %s' % (e,))
 
-
-elif plat == 'cygwin':       # cygwin/win32 (confirmed)
-
-    class PlatformSpecific(PlatformSpecificBase):
-        BAUDRATE_CONSTANTS = {
-            128000: 0x01003,
-            256000: 0x01005,
-            500000: 0x01007,
-            576000: 0x01008,
-            921600: 0x01009,
-            1000000: 0x0100a,
-            1152000: 0x0100b,
-            1500000: 0x0100c,
-            2000000: 0x0100d,
-            2500000: 0x0100e,
-            3000000: 0x0100f
-        }
-
-        def number_to_device(self, port_number):
-            return '/dev/com%d' % (port_number + 1,)
-
-
-elif plat[:7] == 'openbsd':    # OpenBSD
-    class PlatformSpecific(PlatformSpecificBase):
-        def number_to_device(self, port_number):
-            return '/dev/cua%02d' % (port_number,)
-
-elif plat[:3] == 'bsd' or plat[:7] == 'freebsd':
-    class PlatformSpecific(PlatformSpecificBase):
-        def number_to_device(self, port_number):
-            return '/dev/cuad%d' % (port_number,)
-
 elif plat[:6] == 'darwin':   # OS X
     import array
     IOSSIOSPEED = 0x80045402  # _IOW('T', 2, speed_t)
@@ -201,34 +169,6 @@ elif plat[:6] == 'darwin':   # OS X
                 fcntl.ioctl(self.fd, IOSSIOSPEED, buf, 1)
 
 
-elif plat[:6] == 'netbsd':   # NetBSD 1.6 testing by Erk
-    class PlatformSpecific(PlatformSpecificBase):
-        def number_to_device(self, port_number):
-            return '/dev/dty%02d' % (port_number,)
-
-elif plat[:4] == 'irix':     # IRIX (partially tested)
-    class PlatformSpecific(PlatformSpecificBase):
-        def number_to_device(self, port_number):
-            return '/dev/ttyf%d' % (port_number + 1,)  # XXX different device names depending on flow control
-
-elif plat[:2] == 'hp':       # HP-UX (not tested)
-    class PlatformSpecific(PlatformSpecificBase):
-        def number_to_device(self, port_number):
-            return '/dev/tty%dp0' % (port_number + 1,)
-
-elif plat[:5] == 'sunos':    # Solaris/SunOS (confirmed)
-    class PlatformSpecific(PlatformSpecificBase):
-        def number_to_device(self, port_number):
-            return '/dev/tty%c' % (ord('a') + port_number,)
-
-elif plat[:3] == 'aix':      # AIX
-    class PlatformSpecific(PlatformSpecificBase):
-        def number_to_device(self, port_number):
-            return '/dev/tty%d' % (port_number,)
-
-else:
-    class PlatformSpecific(PlatformSpecificBase):
-        pass
 
 # whats up with "aix", "beos", ....
 # they should work, just need to know the device names.

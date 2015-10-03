@@ -13,7 +13,7 @@
 
 import glob
 import os
-from serial.tools import list_ports_common
+import list_ports_common
 
 
 class SysFS(list_ports_common.ListPortInfo):
