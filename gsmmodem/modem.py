@@ -10,9 +10,9 @@ from .exceptions import CommandError, InvalidStateException, CmeError, CmsError,
 from .pdu import encodeSmsSubmitPdu, decodeSmsPdu
 from .util import SimpleOffsetTzInfo, lineStartingWith, allLinesMatchingPattern, parseTextModeTimeStr
 
-from . import compat # For Python 2.6 compatibility
-from gsmmodem.util import lineMatching
-from gsmmodem.exceptions import EncodingError
+from .util import lineMatching
+from .exceptions import EncodingError
+
 PYTHON_VERSION = sys.version_info[0]
 if PYTHON_VERSION >= 3:
     xrange = range

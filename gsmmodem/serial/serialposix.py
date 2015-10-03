@@ -22,8 +22,8 @@ import sys
 import termios
 import time
 
-import serial
-from serial.serialutil import SerialBase, SerialException, to_bytes, portNotOpenError, writeTimeoutError
+# import serial
+from serialutil import SerialBase, SerialException, to_bytes, portNotOpenError, writeTimeoutError
 
 
 class PlatformSpecificBase(object):
@@ -55,102 +55,100 @@ and with a bit luck you can get this module running...
 # try to detect the OS so that a device can be selected...
 # this code block should supply a device() and set_special_baudrate() function
 # for the platform
-plat = sys.platform.lower()
 
-if plat[:5] == 'linux':    # Linux (confirmed)
-    import array
 
-    # baudrate ioctls
-    TCGETS2 = 0x802C542A
-    TCSETS2 = 0x402C542B
-    BOTHER = 0o010000
 
-    # RS485 ioctls
-    TIOCGRS485 = 0x542E
-    TIOCSRS485 = 0x542F
-    SER_RS485_ENABLED = 0b00000001
-    SER_RS485_RTS_ON_SEND = 0b00000010
-    SER_RS485_RTS_AFTER_SEND = 0b00000100
-    SER_RS485_RX_DURING_TX = 0b00010000
+# baudrate ioctls
+TCGETS2 = 0x802C542A
+TCSETS2 = 0x402C542B
+BOTHER = 0o010000
 
-    class PlatformSpecific(PlatformSpecificBase):
-        BAUDRATE_CONSTANTS = {
-            0:       0o000000,  # hang up
-            50:      0o000001,
-            75:      0o000002,
-            110:     0o000003,
-            134:     0o000004,
-            150:     0o000005,
-            200:     0o000006,
-            300:     0o000007,
-            600:     0o000010,
-            1200:    0o000011,
-            1800:    0o000012,
-            2400:    0o000013,
-            4800:    0o000014,
-            9600:    0o000015,
-            19200:   0o000016,
-            38400:   0o000017,
-            57600:   0o010001,
-            115200:  0o010002,
-            230400:  0o010003,
-            460800:  0o010004,
-            500000:  0o010005,
-            576000:  0o010006,
-            921600:  0o010007,
-            1000000: 0o010010,
-            1152000: 0o010011,
-            1500000: 0o010012,
-            2000000: 0o010013,
-            2500000: 0o010014,
-            3000000: 0o010015,
-            3500000: 0o010016,
-            4000000: 0o010017
-        }
+# RS485 ioctls
+TIOCGRS485 = 0x542E
+TIOCSRS485 = 0x542F
+SER_RS485_ENABLED = 0b00000001
+SER_RS485_RTS_ON_SEND = 0b00000010
+SER_RS485_RTS_AFTER_SEND = 0b00000100
+SER_RS485_RX_DURING_TX = 0b00010000
 
-        def number_to_device(self, port_number):
-            return '/dev/ttyS%d' % (port_number,)
+class PlatformSpecific(PlatformSpecificBase):
+    BAUDRATE_CONSTANTS = {
+        0:       0o000000,  # hang up
+        50:      0o000001,
+        75:      0o000002,
+        110:     0o000003,
+        134:     0o000004,
+        150:     0o000005,
+        200:     0o000006,
+        300:     0o000007,
+        600:     0o000010,
+        1200:    0o000011,
+        1800:    0o000012,
+        2400:    0o000013,
+        4800:    0o000014,
+        9600:    0o000015,
+        19200:   0o000016,
+        38400:   0o000017,
+        57600:   0o010001,
+        115200:  0o010002,
+        230400:  0o010003,
+        460800:  0o010004,
+        500000:  0o010005,
+        576000:  0o010006,
+        921600:  0o010007,
+        1000000: 0o010010,
+        1152000: 0o010011,
+        1500000: 0o010012,
+        2000000: 0o010013,
+        2500000: 0o010014,
+        3000000: 0o010015,
+        3500000: 0o010016,
+        4000000: 0o010017
+    }
 
-        def _set_special_baudrate(self, baudrate):
-            # right size is 44 on x86_64, allow for some growth
-            buf = array.array('i', [0] * 64)
-            try:
-                # get serial_struct
-                fcntl.ioctl(self.fd, TCGETS2, buf)
-                # set custom speed
-                buf[2] &= ~termios.CBAUD
-                buf[2] |= BOTHER
-                buf[9] = buf[10] = baudrate
+    def number_to_device(self, port_number):
+        return '/dev/ttyS%d' % (port_number,)
 
-                # set serial_struct
-                fcntl.ioctl(self.fd, TCSETS2, buf)
-            except IOError as e:
-                raise ValueError('Failed to set custom baud rate (%s): %s' % (baudrate, e))
+    def _set_special_baudrate(self, baudrate):
+        # right size is 44 on x86_64, allow for some growth
+        buf = array.array('i', [0] * 64)
+        try:
+            # get serial_struct
+            fcntl.ioctl(self.fd, TCGETS2, buf)
+            # set custom speed
+            buf[2] &= ~termios.CBAUD
+            buf[2] |= BOTHER
+            buf[9] = buf[10] = baudrate
 
-        def _set_rs485_mode(self, rs485_settings):
-            buf = array.array('i', [0] * 8)  # flags, delaytx, delayrx, padding
-            try:
-                fcntl.ioctl(self.fd, TIOCGRS485, buf)
-                if rs485_settings is not None:
-                    if rs485_settings.loopback:
-                        buf[0] |= SER_RS485_RX_DURING_TX
-                    else:
-                        buf[0] &= ~SER_RS485_RX_DURING_TX
-                    if rs485_settings.rts_level_for_tx:
-                        buf[0] |= SER_RS485_RTS_ON_SEND
-                    else:
-                        buf[0] &= ~SER_RS485_RTS_ON_SEND
-                    if rs485_settings.rts_level_for_rx:
-                        buf[0] |= SER_RS485_RTS_AFTER_SEND
-                    else:
-                        buf[0] &= ~SER_RS485_RTS_AFTER_SEND
-                    buf[1] = int(rs485_settings.delay_rts_before_send * 1000)
-                    buf[2] = int(rs485_settings.delay_rts_after_send * 1000)
+            # set serial_struct
+            fcntl.ioctl(self.fd, TCSETS2, buf)
+        except IOError as e:
+            raise ValueError('Failed to set custom baud rate (%s): %s' % (baudrate, e))
+
+    def _set_rs485_mode(self, rs485_settings):
+        buf = array.array('i', [0] * 8)  # flags, delaytx, delayrx, padding
+        try:
+            fcntl.ioctl(self.fd, TIOCGRS485, buf)
+            if rs485_settings is not None:
+                if rs485_settings.loopback:
+                    buf[0] |= SER_RS485_RX_DURING_TX
                 else:
-                    buf[0] = 0  # clear SER_RS485_ENABLED
-                fcntl.ioctl(self.fd, TIOCSRS485, buf)
-            except IOError as e:
-                raise ValueError('Failed to set RS485 mode: %s' % (e,))
+                    buf[0] &= ~SER_RS485_RX_DURING_TX
+                if rs485_settings.rts_level_for_tx:
+                    buf[0] |= SER_RS485_RTS_ON_SEND
+                else:
+                    buf[0] &= ~SER_RS485_RTS_ON_SEND
+                if rs485_settings.rts_level_for_rx:
+                    buf[0] |= SER_RS485_RTS_AFTER_SEND
+                else:
+                    buf[0] &= ~SER_RS485_RTS_AFTER_SEND
+                buf[1] = int(rs485_settings.delay_rts_before_send * 1000)
+                buf[2] = int(rs485_settings.delay_rts_after_send * 1000)
+            else:
+                buf[0] = 0  # clear SER_RS485_ENABLED
+            fcntl.ioctl(self.fd, TIOCSRS485, buf)
+        except IOError as e:
+            raise ValueError('Failed to set RS485 mode: %s' % (e,))
 
 
 # whats up with "aix", "beos", ....
