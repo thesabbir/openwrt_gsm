@@ -20,12 +20,8 @@ if sys.platform == 'cli':
 else:
     import os
     # chose an implementation, depending on os
-    if os.name == 'nt':  # sys.platform == 'win32':
-        from serial.serialwin32 import Serial
-    elif os.name == 'posix':
+    if os.name == 'posix':
         from serial.serialposix import Serial, PosixPollSerial
-    elif os.name == 'java':
-        from serial.serialjava import Serial
     else:
         raise ImportError("Sorry: no implementation for your platform ('%s') available" % (os.name,))
 
