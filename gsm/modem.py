@@ -10,8 +10,8 @@ from .exceptions import CommandError, InvalidStateException, CmeError, CmsError,
 from .pdu import encodeSmsSubmitPdu, decodeSmsPdu
 from .util import SimpleOffsetTzInfo, lineStartingWith, allLinesMatchingPattern, parseTextModeTimeStr
 
-from .util import lineMatching
-from .exceptions import EncodingError
+from gsm.util import lineMatching
+from gsm.exceptions import EncodingError
 
 PYTHON_VERSION = sys.version_info[0]
 if PYTHON_VERSION >= 3:

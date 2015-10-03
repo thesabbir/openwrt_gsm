@@ -21,8 +21,10 @@ import struct
 import sys
 import termios
 import time
+import array
 
-# import serial
+
+import serial
 from serialutil import SerialBase, SerialException, to_bytes, portNotOpenError, writeTimeoutError
 
 
@@ -51,11 +53,6 @@ and with a bit luck you can get this module running...
 
     def _set_rs485_mode(self, rs485_settings):
         raise NotImplementedError('RS485 not supported on this platform')
-
-# try to detect the OS so that a device can be selected...
-# this code block should supply a device() and set_special_baudrate() function
-# for the platform
-
 
 
 # baudrate ioctls
@@ -149,7 +146,6 @@ class PlatformSpecific(PlatformSpecificBase):
             fcntl.ioctl(self.fd, TIOCSRS485, buf)
         except IOError as e:
             raise ValueError('Failed to set RS485 mode: %s' % (e,))
-
 
 # whats up with "aix", "beos", ....
 # they should work, just need to know the device names.
