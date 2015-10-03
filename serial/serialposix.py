@@ -152,23 +152,6 @@ if plat[:5] == 'linux':    # Linux (confirmed)
             except IOError as e:
                 raise ValueError('Failed to set RS485 mode: %s' % (e,))
 
-elif plat[:6] == 'darwin':   # OS X
-    import array
-    IOSSIOSPEED = 0x80045402  # _IOW('T', 2, speed_t)
-
-    class PlatformSpecific(PlatformSpecificBase):
-        def number_to_device(self, port_number):
-            return '/dev/cuad%d' % (port_number,)
-
-        osx_version = os.uname()[2].split('.')
-        # Tiger or above can support arbitrary serial speeds
-        if int(osx_version[0]) >= 8:
-            def _set_special_baudrate(self, baudrate):
-                # use IOKit-specific call to set up high speeds
-                buf = array.array('i', [baudrate])
-                fcntl.ioctl(self.fd, IOSSIOSPEED, buf, 1)
-
-
 
 # whats up with "aix", "beos", ....
 # they should work, just need to know the device names.
