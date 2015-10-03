@@ -1,1 +1,1 @@
-from gsmmodem import *
+from gsm import *
