@@ -5,7 +5,7 @@
 import sys, threading, logging
 
 import re
-from . import serial
+import serial
 from .exceptions import TimeoutException
 
 class SerialComms(object):
