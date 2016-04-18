@@ -38,5 +38,10 @@ if __name__ == '__main__':
 
 [More Examples](https://github.com/faucamp/python-gsmmodem/tree/master/examples)
 
+# TODOS
+- [ ] Make it more light weight
+- [ ] Reduce Size
+
 # Credits
 [Python GSM Modem](https://github.com/faucamp/python-gsmmodem)
+
